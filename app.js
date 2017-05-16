@@ -183,8 +183,6 @@ const getCorrectAnswer = () => {
     }
 };
 
-// dom manipulation 
-
 const emptyContainer = () => {
     $('.container').empty();
 };
@@ -192,22 +190,20 @@ const emptyContainer = () => {
 const addQuestion = (question) => {
     $('.container').replaceWith(`
         <div class="container">
-        <h1 class="question-header">${question.questionName}</h1>
-        <form id="myForm">
-            <input type="radio" name="question-item" value="${question.answer1.correct}"> ${question.answer1.text}<br>
-            <input type="radio" name="question-item" value="${question.answer2.correct}"> ${question.answer2.text}</input><br>
-            <input type="radio" name="question-item" value="${question.answer3.correct}"> ${question.answer3.text}<br>
-            <input type="radio" name="question-item" value="${question.answer4.correct}"> ${question.answer4.text}<br>
-            <button type="submit">Submit</button>
-        </form>
-        <footer>
-            <p class="align-left">Question: ${appState.globals.questionIndex}/10 </p> 
-            <p class="align-right">Correct: ${appState.globals.howManyCorrect}/10 </p> 
-        </footer>
+            <h1 class="question-header">${question.questionName}</h1>
+            <form id="myForm">
+                <input type="radio" name="question-item" value="${question.answer1.correct}"> ${question.answer1.text}<br>
+                <input type="radio" name="question-item" value="${question.answer2.correct}"> ${question.answer2.text}</input><br>
+                <input type="radio" name="question-item" value="${question.answer3.correct}"> ${question.answer3.text}<br>
+                <input type="radio" name="question-item" value="${question.answer4.correct}"> ${question.answer4.text}<br>
+                <button type="submit">Submit</button>
+            </form>
+            <footer>
+                <p class="align-left">Question: ${appState.globals.questionIndex}/10 </p> 
+                <p class="align-right">Correct: ${appState.globals.howManyCorrect}/10 </p> 
+            </footer>
         </div>
     `);
-    
-    assignEventHandlerToSubmit();
 };
 
 const isSubmitCorrect = (submit, answer) => {
@@ -217,16 +213,6 @@ const isSubmitCorrect = (submit, answer) => {
     } else {
         alert(`Incorrect. It's actually: ${answer}`);
     }
-};
-
-
-
-const assignEventHandlerToSubmit = () => {
-    $('#myForm').submit( (event) => {
-        event.preventDefault();
-        isSubmitCorrect($('input[name=question-item]:checked', '#myForm').val(), getCorrectAnswer());
-        renderNextQuestion();
-    });
 };
 
 const renderNextQuestion = () => {
@@ -251,14 +237,27 @@ const renderLastPage = () => {
             <button id="start-over">Try again?</button>
         </div>
     `);
-    
-    $('#start-over').click( (event) => {
-        window.location.reload(true);
-    });
-    
 };
 
-$('#start').click( (event) => {
+$('body').on('submit', '#myForm', (event) => {
+    event.preventDefault();
+    isSubmitCorrect($('input[name=question-item]:checked', '#myForm').val(), getCorrectAnswer());
+    renderNextQuestion();
+});
+
+$('body').on('click', '#start-over', (event) => {
+    appState.state = {};
+    emptyContainer();
+    $('.container').replaceWith(`
+        <div class="container">
+            <h1 class="start_header">Welcome to the Quiz App</h1>    
+            <p class="start_text">Click below to get started</p>
+            <button id="start">Start</button>
+        </div>
+    `);
+});
+
+$('body').on('click', '#start', (event) => {
     emptyContainer();
     changeState();
     appState.globals.questionIndex++;
