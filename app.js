@@ -1,5 +1,5 @@
 /* global $ */
-
+// state
 const QUESTIONS  = [
     {
         questionName: "What is a full house?",
@@ -164,102 +164,151 @@ const QUESTIONS  = [
 ];
 
 const appState = {
-    globals: { 
-        howManyCorrect: 0,
-        questionIndex: 0,
-    },
-    state: {},
-};
-
-const changeState = () => {
-    appState.state = QUESTIONS[appState.globals.questionIndex];
-};
-
-const getCorrectAnswer = () => {
-    for (let i in appState.state) {
-        if (appState.state[i].correct === true) {
-            return appState.state[i].text;
-        }
+    howManyCorrect: 0,
+    questionIndex: 0,
+    container: null,
+    currentQuestion: {},
+    isAnsweredState: {
+        isAnswered: false,
+        givenAnswer: null,
     }
 };
 
-const emptyContainer = () => {
-    $('.container').empty();
-};
-
-const addQuestion = (question) => {
-    $('.container').replaceWith(`
+//layouts
+const questionLayout = (question) => { 
+    return (`
         <div class="container">
             <h1 class="question-header">${question.questionName}</h1>
             <form id="myForm">
                 <input type="radio" name="question-item" value="${question.answer1.correct}"> ${question.answer1.text}<br>
-                <input type="radio" name="question-item" value="${question.answer2.correct}"> ${question.answer2.text}</input><br>
+                <input type="radio" name="question-item" value="${question.answer2.correct}"> ${question.answer2.text}<br>
                 <input type="radio" name="question-item" value="${question.answer3.correct}"> ${question.answer3.text}<br>
                 <input type="radio" name="question-item" value="${question.answer4.correct}"> ${question.answer4.text}<br>
                 <button type="submit">Submit</button>
             </form>
             <footer>
-                <p class="align-left">Question: ${appState.globals.questionIndex}/10 </p> 
-                <p class="align-right">Correct: ${appState.globals.howManyCorrect}/10 </p> 
+                <p class="align-left">Question: ${appState.questionIndex}/10 </p> 
+                <p class="align-right">Correct: ${appState.howManyCorrect}/10 </p> 
             </footer>
         </div>
     `);
 };
-
-const isSubmitCorrect = (submit, answer) => {
-    if (submit === "true") {
-        alert("Correct!");
-        appState.globals.howManyCorrect++;
-    } else {
-        alert(`Incorrect. It's actually: ${answer}`);
-    }
-};
-
-const renderNextQuestion = () => {
-    if (appState.globals.questionIndex < 10) {
-        emptyContainer();
-        changeState();
-        appState.globals.questionIndex++;
-        addQuestion(appState.state);
-    } else {
-        renderLastPage();
-    }
-};
-
-const renderLastPage = () => {
-    emptyContainer();
-    $('.container').replaceWith(`
-        <div class="container">
-            <h1 class="finished-header">Congratulations you've finished!</h1>
-            <div class="score">
-                <p> Your final score is ${appState.globals.howManyCorrect} out of 10. </p>
-            </div>
-            <button id="start-over">Try again?</button>
-        </div>
-    `);
-};
-
-$('body').on('submit', '#myForm', (event) => {
-    event.preventDefault();
-    isSubmitCorrect($('input[name=question-item]:checked', '#myForm').val(), getCorrectAnswer());
-    renderNextQuestion();
-});
-
-$('body').on('click', '#start-over', (event) => {
-    appState.state = {};
-    emptyContainer();
-    $('.container').replaceWith(`
+const startLayout = () => {
+    return (`
         <div class="container">
             <h1 class="start_header">Welcome to the Quiz App</h1>    
             <p class="start_text">Click below to get started</p>
             <button id="start">Start</button>
         </div>
     `);
-});
+};
+const endLayout = () => {
+    return (`
+        <div class="container">
+            <h1 class="finished-header">Congratulations you've finished!</h1>
+            <div class="score">
+                <p> Your final score is ${appState.howManyCorrect} out of 10. </p>
+            </div>
+            <button id="start-over">Try again?</button>
+        </div>
+    `);
+};
+
+// rendering
+
+const render = () => {
+    if (appState.container === null) { // first load
+        changeContainer(startLayout());
+    }
+        
+    if (appState.isAnsweredState.isAnswered === true) {
+        isSubmitCorrect($('input[name=question-item]:checked', '#myForm').val(), appState.isAnsweredState.givenAnswer);
+        nextQuestion();
+        
+        if (appState.questionIndex === 10) { // on last question
+            appState.isAnsweredState = {
+                isAnswered: false,
+                givenAnswer: null,
+            };
+            changeContainer(endLayout());
+            $('.container').replaceWith(appState.container); return;
+        }
+        
+        changeContainer(questionLayout(QUESTIONS[appState.questionIndex]));
+        render();
+    }
+    
+    $('.container').replaceWith(appState.container);
+    
+};
+
+// changing state
+const changeContainer = (container) => {
+    appState.container = container;
+};
+
+const changeQuestion = (question) => {
+    appState.currentQuestion = question;
+};
+
+const isAnswered = (userAnswer) => {
+    appState.isAnsweredState.isAnswered = true;
+    appState.isAnsweredState.givenAnswer = userAnswer;
+};
+
+const increaseScore = () => {
+    appState.howManyCorrect++;
+};
+
+const nextQuestion = () => {
+    appState.questionIndex++;
+    appState.isAnsweredState = {
+        isAnswered: false,
+        givenAnswer: null,
+    };
+};
+
+// application logic
+
+const isSubmitCorrect = (submit, answer) => {
+    if (submit === "true") {
+        alert("Correct!");
+        increaseScore();
+    } else {
+        alert(`Incorrect. It's actually: ${answer}`);
+    }
+};
+
+const getCorrectAnswer = () => {
+    for (let i in appState.currentQuestion) {
+        if (appState.currentQuestion[i].correct === true) {
+            return appState.currentQuestion[i].text;
+        }
+    }
+};
+
+// event handlers
 
 $('body').on('click', '#start', (event) => {
-    emptyContainer();
-    changeState();
-    appState.globals.questionIndex++;
-    addQuestion(appState.state);
+    changeQuestion(QUESTIONS[appState.questionIndex]);
+    changeContainer(questionLayout(appState.currentQuestion));
+    render();
+});
+
+$('body').on('submit', '#myForm', (event) => {
+    event.preventDefault();
+    isAnswered(getCorrectAnswer());
+    render();
+});
+
+$('body').on('click', '#start-over', (event) => {
+    changeContainer(null);
+    changeQuestion({});
+    nextQuestion();
+    appState.questionIndex = 0, appState.howManyCorrect = 0;
+    render();
+});
+
+$(document).ready((event) =>{
+    render();
 });

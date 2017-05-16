@@ -1,9 +1,44 @@
-.container {
-    height: 300px;
-    width: 400px;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    margin: -70px 0 0 -170px;
-    border: black 1px solid;
+
+html { 
+  background: url(http://www.designbolts.com/wp-content/uploads/2012/12/White-wall-Seamless-Pattern-For-Website-Background.jpg)  no-repeat center center fixed; 
+  background-size: cover;
 }
+
+
+
+.container {
+    height: 400px;
+    width: 700px;
+    position: absolute;
+    border: black 3px solid;
+    text-align: center;
+	margin-left: 900px;
+	margin-top: 100px;
+	border-radius: 45px;
+	background-color: white;
+}
+
+.header {
+	text-align: center;
+	background-color: black;
+	margin-top: 0px;
+	height: 300px;
+}
+
+
+
+#quizTitle {
+	color: white;
+	font-size: 125px;
+	 font-family: 'IM Fell DW Pica', serif;
+
+}
+
+#quizTitle2{
+	color: white;
+	font-size: 65px;
+	margin-top: -100px;
+}
+
+
+
